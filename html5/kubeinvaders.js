@@ -746,7 +746,7 @@ function keyDownHandler(e) {
             
             // Reset the key_presses array for the next detection
             key_presses = [];
-        } else if (keyPresses.length >= desiredKeyPresses.length) {
+        } else if (key_presses.length >= cheat_code.length) {
             // do something if the series is not matched
             key_presses = [];
         }
