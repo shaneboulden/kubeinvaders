@@ -43,6 +43,10 @@ var log_tail_div = document.getElementById("logTailDiv");
 var log_tail_screen = document.getElementById("logTailScreen");
 var random_code = (Math.random() + 1).toString(36).substring(7);
 
+// cheat code
+const cheat_code = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+var key_presses = [];
+
 // nodes list from kubernetes
 var nodes = [];
 
@@ -675,6 +679,8 @@ window.setInterval(function getKubeItems() {
 function keyDownHandler(e) {
     if (!modal_opened && game_mode_switch) {
         e.preventDefault();
+        key_presses.push(e.key);
+
         if(e.key == "Right" || e.key == "ArrowRight") {
             rightPressed = true;
         }
@@ -731,6 +737,18 @@ function keyDownHandler(e) {
                 chaos_pods = true
                 $('#alert_placeholder').replaceWith(alert_div + 'Latest action: Show pods</div>');
             }
+        }
+
+        // Validate the cheat code
+        if (key_presses.length === cheat_code.length && key_presses.every((value, index) => value === cheat_code[index])) {
+            console.log('Cheat code activated!!');
+            // Perform an action when the cheat code is activated
+            
+            // Reset the key_presses array for the next detection
+            key_presses = [];
+        } else if (keyPresses.length >= desiredKeyPresses.length) {
+            // do something if the series is not matched
+            key_presses = [];
         }
     }
 }

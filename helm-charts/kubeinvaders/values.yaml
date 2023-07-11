@@ -36,8 +36,8 @@ clusterRole:
 deployment:
   replicaCount: 1
   image:
-    repository: luckysideburn/kubeinvaders
-    tag: v1.9.6
+    repository: quay.io/smileyfritz/kubeinvaders
+    tag: v0.1.0
     pullPolicy: Always
   extraEnv: []
   # - name: FOO
@@ -68,7 +68,7 @@ ingress:
   tls: {}
 
 # Use route_host only if ingress is disabled
-route_host: ""
+route_host: "kubeinvaders.blueradish.net"
 
 serviceMonitor:
   enabled: false
