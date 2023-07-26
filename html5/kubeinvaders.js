@@ -546,6 +546,14 @@ function enableLogTail() {
     setLogRegex();
 }
 
+function enableCheatCode() {
+    var oReq = new XMLHttpRequest();
+    oReq.open("POST", k8s_url + "/kube/cheatcode?namespace=" + namespace + "&pod="+pods[0], true);
+    oReq.setRequestHeader("Content-Type", "application/json");
+    oReq.send("{}");
+    setLogRegex();
+}
+
 function disableLogTail() {
     var oReq = new XMLHttpRequest();
     oReq.open("POST", k8s_url + "/kube/chaos/containers?action=disable_log_tail&id=" + random_code, true);
@@ -742,11 +750,9 @@ function keyDownHandler(e) {
         // Validate the cheat code
         if (key_presses.length === cheat_code.length && key_presses.every((value, index) => value === cheat_code[index])) {
             console.log('Cheat code activated!!');
-            // Perform an action when the cheat code is activated
-            
-            // Reset the key_presses array for the next detection
-            key_presses = [];
-        } else if (key_presses.length >= cheat_code.length) {
+            enableCheatCode();
+            key_presses = []        
+        }  else if (key_presses.length >= cheat_code.length) {
             // do something if the series is not matched
             key_presses = [];
         }
