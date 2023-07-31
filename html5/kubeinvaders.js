@@ -45,6 +45,7 @@ var random_code = (Math.random() + 1).toString(36).substring(7);
 
 // cheat code
 const cheat_code = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+var cheat_code_enabled = false;
 var key_presses = [];
 
 // nodes list from kubernetes
@@ -552,6 +553,7 @@ function enableCheatCode() {
     oReq.setRequestHeader("Content-Type", "application/json");
     oReq.send("{}");
     $('#alert_placeholder').replaceWith(alert_div + 'Cheat code activated!!</div>');
+    cheat_code_enabled = true;
 }
 
 function disableLogTail() {
@@ -637,6 +639,16 @@ function deletePods(pod_name) {
     };;
     oReq.open("GET", k8s_url + "/kube/pods?action=delete&pod_name=" + pod_name + "&namespace=" + namespace);
     oReq.send();
+}
+
+function disableCheatCode(deployment_name) {
+    var oReq = new XMLHttpRequest();
+    oReq.onload = function () {
+        $('#alert_placeholder').replaceWith(alert_div + 'Infection ended!!</div>');
+    };;
+    oReq.open("GET", k8s_url + "/kube/deployment?action=delete&namespace=" + namespace);
+    oReq.send();
+    cheat_code_enabled = false;
 }
 
 function getPods() {
@@ -802,11 +814,13 @@ function drawAlien(alienX, alienY, name) {
         image.src = './images/k8s_node.png';
         ctx.drawImage(image, alienX, alienY, 30, 40);
     } else if (/.*(log4shell).*/.test(name)) {
-        image.src = './images/sprite_invader_infected.png';
-        ctx.font = '8px pixel';
-        ctx.drawImage(image, alienX, alienY, 40, 40);
-        if (showPodName) {
-            ctx.fillText(name.substring(0, 19) + '..', alienX, alienY + 40);
+        if (cheat_code_enabled) {
+            image.src = './images/sprite_invader_infected.png';
+            ctx.font = '8px pixel';
+            ctx.drawImage(image, alienX, alienY, 40, 40);
+            if (showPodName) {
+                ctx.fillText(name.substring(0, 19) + '..', alienX, alienY + 40);
+            }
         }
     }
     else {
@@ -837,6 +851,9 @@ function checkRocketAlienCollision() {
                     aliens[i]["active"] = false;
                     if (contains(nodes, aliens[i]["name"])) {
                         startChaosNode(aliens[i]["name"]);
+                        aliens[i]["name"] = "killed_pod";
+                    } else if (/.*(log4shell).*/.test(aliens[i]["name"])) {
+                        disableCheatCode();
                         aliens[i]["name"] = "killed_pod";
                     }
                     else {

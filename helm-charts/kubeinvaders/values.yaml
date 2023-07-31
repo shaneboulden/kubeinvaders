@@ -37,7 +37,7 @@ deployment:
   replicaCount: 1
   image:
     repository: quay.io/smileyfritz/kubeinvaders
-    tag: v0.1.26
+    tag: v0.1.30
     pullPolicy: Always
   extraEnv: []
   # - name: FOO
