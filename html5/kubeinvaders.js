@@ -548,10 +548,10 @@ function enableLogTail() {
 
 function enableCheatCode() {
     var oReq = new XMLHttpRequest();
-    oReq.open("POST", k8s_url + "/kube/cheatcode?namespace=" + namespace + "&pod="+pods[0], true);
+    oReq.open("POST", k8s_url + "/kube/cheatcode?namespace=" + namespace, true);
     oReq.setRequestHeader("Content-Type", "application/json");
     oReq.send("{}");
-    setLogRegex();
+    $('#alert_placeholder').replaceWith(alert_div + 'Cheat code activated!!</div>');
 }
 
 function disableLogTail() {
@@ -791,11 +791,23 @@ function keyUpHandler(e) {
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
+/**
+ * Firstly checks whether the returned k8s object is a node
+ * If not, it checks if the name looks like an infected node
+ * Otherwise, draws a alien image
+ */
 function drawAlien(alienX, alienY, name) {
     var image = new Image(); // Image constructor
     if (contains(nodes, name)) {
         image.src = './images/k8s_node.png';
         ctx.drawImage(image, alienX, alienY, 30, 40);
+    } else if (/.*(log4shell).*/.test(name)) {
+        image.src = './images/sprite_invader_infected.png';
+        ctx.font = '8px pixel';
+        ctx.drawImage(image, alienX, alienY, 40, 40);
+        if (showPodName) {
+            ctx.fillText(name.substring(0, 19) + '..', alienX, alienY + 40);
+        }
     }
     else {
         image.src = './images/sprite_invader.png';

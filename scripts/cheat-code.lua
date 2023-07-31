@@ -7,9 +7,6 @@ local json = require "lunajson"
 local arg = ngx.req.get_uri_args()
 local config = require "config_kubeinv"
 
-local http = require("socket.http")
-math.randomseed(os.clock()*100000000000)
-local rand = math.random(999, 9999)
 local arg = ngx.req.get_uri_args()
 local k8s_url = ""
 
@@ -49,7 +46,7 @@ local body = [[
         },
         "spec": {
           "progressDeadlineSeconds": 600,
-          "replicas": 0,
+          "replicas": 1,
           "revisionHistoryLimit": 10,
           "selector": {
             "matchLabels": {
