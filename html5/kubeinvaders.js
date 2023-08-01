@@ -46,6 +46,9 @@ var random_code = (Math.random() + 1).toString(36).substring(7);
 // cheat code
 const cheat_code = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 var cheat_code_enabled = false;
+var infected_count = 0;
+var max_infected_count = 5;
+var infected_limit_reached = false;
 var key_presses = [];
 
 // nodes list from kubernetes
@@ -649,6 +652,17 @@ function disableCheatCode(deployment_name) {
     oReq.open("GET", k8s_url + "/kube/deployment?action=delete&namespace=" + namespace);
     oReq.send();
     cheat_code_enabled = false;
+    infected_limit_reached = false;
+    infected_count = 1;
+}
+
+function scaleInfectedPods() {
+    var oReq = new XMLHttpRequest();
+    oReq.onload = function () {
+        $('#alert_placeholder').replaceWith(alert_div + 'Infection increased!!</div>');
+    };;
+    oReq.open("GET", k8s_url + "/kube/scale?replicas=" + infected_count + "&namespace=" + namespace);
+    oReq.send();
 }
 
 function getPods() {
@@ -853,7 +867,13 @@ function checkRocketAlienCollision() {
                         startChaosNode(aliens[i]["name"]);
                         aliens[i]["name"] = "killed_pod";
                     } else if (/.*(log4shell).*/.test(aliens[i]["name"])) {
-                        disableCheatCode();
+                        if(infected_count == 0) {
+                            disableCheatCode();
+                        } else {
+                            deletePods(aliens[i]["name"]);
+                            infected_count--;
+                            scaleInfectedPods();
+                        }
                         aliens[i]["name"] = "killed_pod";
                     }
                     else {
@@ -914,6 +934,19 @@ function getRandomInt(max) {
 window.setInterval(function draw() {
     if (namespacesJumpFlag){
         randNamespaceJump(1, 10, 8);
+    }
+}, 1000)
+
+window.setInterval(function draw() {
+    if (cheat_code_enabled) {
+        if (infected_count < max_infected_count) {
+            if(!infected_limit_reached) {
+                infected_count++;
+                scaleInfectedPods();
+            }
+        } else if (infected_count === max_infected_count) {
+            infected_limit_reached = true;
+        }
     }
 }, 1000)
 

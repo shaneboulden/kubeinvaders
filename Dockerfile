@@ -59,6 +59,7 @@ COPY scripts/chaos-containers.lua /usr/local/openresty/nginx/conf/kubeinvaders/c
 COPY scripts/programming_mode.lua /usr/local/openresty/nginx/conf/kubeinvaders/programming_mode.lua
 COPY scripts/cheat-code.lua /usr/local/openresty/nginx/conf/kubeinvaders/cheat-code.lua
 COPY scripts/deployment.lua /usr/local/openresty/nginx/conf/kubeinvaders/deployment.lua
+COPY scripts/scale.lua /usr/local/openresty/nginx/conf/kubeinvaders/scale.lua
 
 COPY scripts/config_kubeinv.lua /usr/local/openresty/lualib/config_kubeinv.lua
 COPY scripts/data/codenames.txt /usr/local/openresty/nginx/conf/kubeinvaders/data/codenames.txt
