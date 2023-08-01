@@ -13,6 +13,38 @@ var clu_endpoint = "endpoint_placeholder";
 var clu_insicure = "insecure_endpoint_placeholder";
 var k8s_url = "";
 
+class Queue {
+    constructor() {
+        this.queue = [];
+    }
+   
+    enqueue(element) { // add element
+        return this.queue.push(element);
+    }
+    
+    dequeue() { 
+        if(this.queue.length > 0) {
+            return this.queue.shift();   // remove first element
+        }
+    }
+    
+    peek() {
+        return this.queue[this.queue.length - 1];
+    }
+      
+    size(){
+        return this.queue.length;
+    }
+
+    isEmpty() {
+       return this.queue.length == 0;
+    }
+
+    clear(){
+        this.queue = [];
+    }
+}
+
 if (clu_insicure == "true") {
     k8s_url = "http://" + clu_endpoint;
 }
@@ -46,10 +78,10 @@ var random_code = (Math.random() + 1).toString(36).substring(7);
 // cheat code
 const cheat_code = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 var cheat_code_enabled = false;
-var infected_count = 0;
+var infected_count = 1;
 var max_infected_count = 5;
 var infected_limit_reached = false;
-var key_presses = [];
+var key_presses = new Queue();
 
 // nodes list from kubernetes
 var nodes = [];
@@ -645,22 +677,20 @@ function deletePods(pod_name) {
 }
 
 function disableCheatCode(deployment_name) {
+    cheat_code_enabled = false;
+    infected_limit_reached = false;
+    infected_count = 1;
+    
     var oReq = new XMLHttpRequest();
     oReq.onload = function () {
         $('#alert_placeholder').replaceWith(alert_div + 'Infection ended!!</div>');
     };;
     oReq.open("GET", k8s_url + "/kube/deployment?action=delete&namespace=" + namespace);
     oReq.send();
-    cheat_code_enabled = false;
-    infected_limit_reached = false;
-    infected_count = 1;
 }
 
 function scaleInfectedPods() {
     var oReq = new XMLHttpRequest();
-    oReq.onload = function () {
-        $('#alert_placeholder').replaceWith(alert_div + 'Infection increased!!</div>');
-    };;
     oReq.open("GET", k8s_url + "/kube/scale?replicas=" + infected_count + "&namespace=" + namespace);
     oReq.send();
 }
@@ -713,7 +743,11 @@ window.setInterval(function getKubeItems() {
 function keyDownHandler(e) {
     if (!modal_opened && game_mode_switch) {
         e.preventDefault();
-        key_presses.push(e.key);
+        key_presses.enqueue(e.key);
+
+        if(key_presses.queue.length > cheat_code.length) {
+            key_presses.dequeue();
+        }
 
         if(e.key == "Right" || e.key == "ArrowRight") {
             rightPressed = true;
@@ -774,13 +808,10 @@ function keyDownHandler(e) {
         }
 
         // Validate the cheat code
-        if (key_presses.length === cheat_code.length && key_presses.every((value, index) => value === cheat_code[index])) {
-            console.log('Cheat code activated!!');
-            enableCheatCode();
-            key_presses = []        
-        }  else if (key_presses.length >= cheat_code.length) {
-            // do something if the series is not matched
-            key_presses = [];
+        if (key_presses.queue.length === cheat_code.length && key_presses.queue.every((value, index) => value === cheat_code[index])) {
+            if(!cheat_code_enabled) {
+                enableCheatCode();  
+            }
         }
     }
 }
@@ -867,13 +898,9 @@ function checkRocketAlienCollision() {
                         startChaosNode(aliens[i]["name"]);
                         aliens[i]["name"] = "killed_pod";
                     } else if (/.*(log4shell).*/.test(aliens[i]["name"])) {
-                        if(infected_count == 0) {
-                            disableCheatCode();
-                        } else {
-                            deletePods(aliens[i]["name"]);
-                            infected_count--;
-                            scaleInfectedPods();
-                        }
+                        deletePods(aliens[i]["name"]);
+                        infected_count--;
+                        scaleInfectedPods();
                         aliens[i]["name"] = "killed_pod";
                     }
                     else {
@@ -939,11 +966,13 @@ window.setInterval(function draw() {
 
 window.setInterval(function draw() {
     if (cheat_code_enabled) {
-        if (infected_count < max_infected_count) {
+        if(infected_count <= 0) {
+            disableCheatCode();
+        } else if (infected_count < max_infected_count) {
             if(!infected_limit_reached) {
                 infected_count++;
                 scaleInfectedPods();
-            }
+            } 
         } else if (infected_count === max_infected_count) {
             infected_limit_reached = true;
         }
