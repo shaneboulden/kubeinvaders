@@ -83,6 +83,12 @@ var max_infected_count = 5;
 var infected_limit_reached = false;
 var key_presses = new Queue();
 
+// sound effects
+var shoot_audio = new Audio("sounds/shoot.wav");
+var cheat_audio = new Audio("sounds/ufo_highpitch.wav");
+cheat_audio.playbackRate = 0.5;
+var killed_audio = new Audio("sounds/invaderkilled.wav");
+
 // nodes list from kubernetes
 var nodes = [];
 
@@ -583,6 +589,7 @@ function enableLogTail() {
 }
 
 function enableCheatCode() {
+    cheat_audio.play();
     var oReq = new XMLHttpRequest();
     oReq.open("POST", k8s_url + "/kube/cheatcode?namespace=" + namespace, true);
     oReq.setRequestHeader("Content-Type", "application/json");
@@ -892,6 +899,7 @@ function checkRocketAlienCollision() {
                 }
                 
                 if(contains(rangeX, rocketX)) {
+                    killed_audio.play();
                     collisionDetected = true;
                     aliens[i]["active"] = false;
                     if (contains(nodes, aliens[i]["name"])) {
@@ -984,6 +992,7 @@ window.setInterval(function draw() {
     drawSpaceship();
     
     if (shot && !collisionDetected) {
+        shoot_audio.play();
         drawRocket();
     }
 
